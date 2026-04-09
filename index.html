@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoizHR - Enterprise Employee Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --bg-body: #f4f6fb;
+            --bg-sidebar: #ffffff;
+            --bg-card: #ffffff;
+            --bg-input: #ffffff;
+            --bg-hover: #f1f5f9;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+        }
+        [data-theme="dark"] {
+            --bg-body: #0f172a;
+            --bg-sidebar: #1e293b;
+            --bg-card: #1e293b;
+            --bg-input: #0f172a;
+            --bg-hover: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.5);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5);
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0; padding: 0;
+            display: flex; min-height: 100vh; overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-body); }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        h1,h2,h3,h4,h5,h6 { font-weight: 600; letter-spacing: -0.02em; color: var(--text-main); }
+        code, .mono { font-family: 'DM Mono', monospace; }
+
+        /* === SIDEBAR === */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            position: fixed; top:0; bottom:0; left:0;
+            z-index: 100;
+            padding: 1.75rem 1.25rem;
+            display: flex; flex-direction: column;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+        .brand {
+            font-size: 1.4rem; font-weight: 700; color: var(--text-main);
+            display: flex; align-items: center; gap: 0.65rem;
+            margin-bottom: 2.5rem; padding-left: 0.5rem;
+        }
+        .brand i { color: var(--primary); font-size: 1.7rem; }
+        .nav-item {
+            display: flex; align-items: center; gap: 0.9rem;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-md);
+            color: var(--text-muted); text-decoration: none;
+            font-weight: 500; margin-bottom: 0.4rem;
+            transition: all 0.2s ease; cursor: pointer;
+        }
+        .nav-item i { font-size: 1.1rem; width:20px; text-align:center; }
+        .nav-item:hover { background-color: var(--bg-hover); color: var(--text-main); }
+        .nav-item.active { background: var(--primary); color: #fff; box-shadow: 0 4px 12px rgba(79,70,229,0.25); }
+        .nav-item.active i { color: #fff; }
+        .theme-toggle-wrapper { margin-top: auto; border-top: 1px solid var(--border-color); padding-top: 1.25rem; }
+        .theme-btn {
+            background: var(--bg-hover); border: 1px solid var(--border-color); color: var(--text-main);
+            width: 100%; padding: 0.6rem; border-radius: var(--radius-md);
+            display: flex; justify-content: center; align-items: center; gap: 0.5rem;
+            font-weight: 500; transition: all 0.2s; font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+        }
+        .theme-btn:hover { border-color: var(--text-muted); }
+
+        /* === MAIN === */
+        .main-content { margin-left: 260px; flex: 1; padding: 2.5rem 3rem; width: calc(100% - 260px); }
+        .view-section { display: none; animation: fadeIn 0.3s ease; }
+        .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+        /* === CARDS === */
+        .card-sc {
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 1.5rem;
+        }
+        .stat-card { display: flex; align-items: center; gap: 1.5rem; }
+        .stat-icon {
+            width: 54px; height: 54px; border-radius: var(--radius-md);
+            display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0;
+        }
+        .bg-prim-subtle { background: rgba(79,70,229,0.1); color: var(--primary); }
+        .bg-succ-subtle { background: rgba(16,185,129,0.1); color: var(--success); }
+        .bg-warn-subtle { background: rgba(245,158,11,0.1); color: var(--warning); }
+        .bg-dang-subtle { background: rgba(239,68,68,0.1); color: var(--danger); }
+        .stat-val { font-size: 1.9rem; font-weight: 700; color: var(--text-main); line-height: 1.1; }
+        .stat-lbl { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; margin-top: 0.2rem; }
+
+        .page-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; }
+
+        /* === BUTTONS === */
+        .btn-prim {
+            background: var(--primary); color: white; border: none;
+            padding: 0.6rem 1.25rem; font-weight: 500;
+            border-radius: var(--radius-md); transition: all 0.2s;
+            box-shadow: var(--shadow-sm); font-family: 'DM Sans', sans-serif; cursor: pointer;
+        }
+        .btn-prim:hover { background: var(--primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-md); color:white; }
+        .btn-sect {
+            background: var(--bg-card); color: var(--text-main);
+            border: 1px solid var(--border-color); padding: 0.6rem 1.25rem; font-weight: 500;
+            border-radius: var(--radius-md); transition: all 0.2s; box-shadow: var(--shadow-sm);
+            font-family: 'DM Sans', sans-serif; cursor: pointer;
+        }
+        .btn-sect:hover { background: var(--bg-hover); border-color: var(--text-muted); }
+        .btn-danger-soft {
+            background: rgba(239,68,68,0.08); color: var(--danger); border: 1px solid rgba(239,68,68,0.2);
+            padding: 0.6rem 1.25rem; font-weight: 500; border-radius: var(--radius-md);
+            transition: all 0.2s; font-family: 'DM Sans', sans-serif; cursor: pointer;
+        }
+        .btn-danger-soft:hover { background: rgba(239,68,68,0.15); }
+
+        /* === INPUTS === */
+        .form-control, .form-select {
+            background-color: var(--bg-input); border: 1px solid var(--border-color);
+            color: var(--text-main); border-radius: var(--radius-md); padding: 0.6rem 1rem;
+            transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: var(--bg-input); color: var(--text-main);
+            border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229,0.15);
+        }
+        .form-control.is-invalid { border-color: var(--danger) !important; box-shadow: 0 0 0 3px rgba(239,68,68,0.12) !important; }
+        .form-label { font-weight: 500; color: var(--text-main); font-size: 0.88rem; margin-bottom: 0.4rem; }
+        .invalid-feedback-custom { color: var(--danger); font-size: 0.78rem; margin-top: 0.3rem; display: none; }
+        .form-control.is-invalid ~ .invalid-feedback-custom,
+        .form-select.is-invalid ~ .invalid-feedback-custom { display: block; }
+        .input-group-text {
+            background: var(--bg-input); border-color: var(--border-color); color: var(--text-muted);
+        }
+
+        /* === TABLE === */
+        .table-responsive {
+            border: 1px solid var(--border-color); border-radius: var(--radius-lg);
+            background: var(--bg-card); overflow: hidden; box-shadow: var(--shadow-sm);
+        }
+        .table { margin-bottom: 0; color: var(--text-main); }
+        .table th {
+            background: var(--bg-hover); color: var(--text-muted);
+            font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em;
+            padding: 0.9rem 1.25rem; border-bottom: 1px solid var(--border-color); border-top: none; white-space: nowrap; cursor: pointer;
+        }
+        .table th:hover { color: var(--text-main); }
+        .table th .sort-icon { margin-left: 4px; opacity: 0.4; }
+        .table th.sorted-asc .sort-icon::after { content: ' ↑'; opacity: 1; }
+        .table th.sorted-desc .sort-icon::after { content: ' ↓'; opacity: 1; }
+        .table td {
+            background: var(--bg-card); padding: 0.9rem 1.25rem; vertical-align: middle;
+            border-bottom: 1px solid var(--border-color); color: var(--text-main); white-space: nowrap;
+        }
+        .table tbody tr:last-child td { border-bottom: none; }
+        .table tbody tr:hover td { background: var(--bg-hover); }
+
+        /* Pagination */
+        .pagination-bar { display: flex; align-items: center; justify-content: space-between; padding: 0.9rem 1.25rem; border-top: 1px solid var(--border-color); background: var(--bg-card); }
+        .page-info { font-size: 0.85rem; color: var(--text-muted); }
+        .page-btns { display: flex; gap: 0.35rem; }
+        .page-btn {
+            width: 32px; height: 32px; border-radius: 6px; border: 1px solid var(--border-color);
+            background: var(--bg-card); color: var(--text-main); font-size: 0.82rem;
+            display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s;
+            font-family: 'DM Sans', sans-serif;
+        }
+        .page-btn:hover { background: var(--bg-hover); }
+        .page-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* Avatars */
+        .avatar {
+            width: 36px; height: 36px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; color: white; font-size: 0.85rem; flex-shrink: 0; letter-spacing: 0.01em;
+        }
+        .avatar-lg {
+            width: 72px; height: 72px; font-size: 1.6rem; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; color: white; flex-shrink: 0;
+        }
+
+        /* Badges */
+        .status-badge {
+            padding: 0.22rem 0.7rem; font-size: 0.73rem; font-weight: 600; border-radius: 20px;
+            display: inline-flex; align-items: center; gap: 0.35rem;
+        }
+        .status-badge::before { content:''; width:5px; height:5px; border-radius:50%; }
+        .badge-active { background: rgba(16,185,129,0.1); color: var(--success); }
+        .badge-active::before { background: var(--success); }
+        .badge-inactive { background: rgba(100,116,139,0.1); color: var(--text-muted); }
+        .badge-inactive::before { background: var(--text-muted); }
+
+        /* Action Buttons */
+        .action-btn {
+            width: 30px; height: 30px; border-radius: 6px;
+            display: inline-flex; align-items: center; justify-content: center;
+            border: none; background: transparent; color: var(--text-muted);
+            transition: all 0.2s; margin-left: 0.2rem; cursor: pointer;
+        }
+        .action-btn:hover.view-btn { background: rgba(16,185,129,0.1); color: var(--success); }
+        .action-btn:hover.edit { background: rgba(79,70,229,0.1); color: var(--primary); }
+        .action-btn:hover.delete { background: rgba(239,68,68,0.1); color: var(--danger); }
+
+        /* Rating Stars */
+        .rating-stars { color: #cbd5e1; font-size: 0.82rem; }
+        .rating-stars .filled { color: var(--warning); }
+
+        /* Chart */
+        .chart-container { position: relative; height: 260px; width: 100%; }
+
+        /* Toast */
+        .custom-toast {
+            background: var(--bg-card); color: var(--text-main);
+            border: 1px solid var(--border-color); box-shadow: var(--shadow-lg);
+            border-left: 4px solid var(--primary); border-radius: var(--radius-md);
+        }
+
+        /* === PROFILE MODAL === */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+            z-index: 2000; display: flex; align-items: center; justify-content: center;
+            opacity: 0; visibility: hidden; transition: all 0.25s ease;
+            backdrop-filter: blur(3px);
+        }
+        .modal-overlay.open { opacity: 1; visibility: visible; }
+        .profile-modal {
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl); box-shadow: var(--shadow-lg);
+            width: 90%; max-width: 560px; max-height: 90vh; overflow-y: auto;
+            transform: translateY(20px) scale(0.98); transition: all 0.25s ease;
+        }
+        .modal-overlay.open .profile-modal { transform: translateY(0) scale(1); }
+        .profile-modal-header {
+            padding: 2rem 2rem 1.5rem; border-bottom: 1px solid var(--border-color);
+            display: flex; align-items: flex-start; gap: 1.25rem;
+        }
+        .profile-modal-body { padding: 1.5rem 2rem 2rem; }
+        .profile-detail-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.7rem 0; border-bottom: 1px solid var(--border-color); font-size: 0.9rem;
+        }
+        .profile-detail-row:last-child { border-bottom: none; }
+        .profile-detail-label { color: var(--text-muted); font-weight: 500; }
+        .profile-detail-val { color: var(--text-main); font-weight: 600; text-align: right; }
+
+        /* Import modal */
+        .import-zone {
+            border: 2px dashed var(--border-color); border-radius: var(--radius-lg);
+            padding: 2.5rem; text-align: center; cursor: pointer; transition: all 0.2s;
+        }
+        .import-zone:hover, .import-zone.drag-over { border-color: var(--primary); background: rgba(79,70,229,0.04); }
+        .import-zone i { font-size: 2rem; color: var(--text-muted); margin-bottom: 0.75rem; }
+
+        /* Mobile */
+        .mobile-header { display: none; }
+        @media (max-width: 991px) {
+            .sidebar { transform: translateX(-100%); z-index: 1050; }
+            .sidebar.show { transform: translateX(0); box-shadow: var(--shadow-lg); }
+            .main-content { margin-left: 0; width: 100%; padding: 1.25rem; }
+            .mobile-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+            .mobile-toggle { background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); border-radius: var(--radius-md); padding: 0.5rem 0.75rem; }
+            .sidebar-overlay { position: fixed; inset:0; background:rgba(0,0,0,0.4); z-index:1040; display:none; }
+            .sidebar-overlay.show { display:block; }
+        }
+        @media (max-width: 576px) {
+            .page-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+            .stat-val { font-size: 1.5rem; }
+        }
+
+        /* Salary input guard */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { opacity: 1; }
+
+        /* Section divider */
+        .form-section-title {
+            font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em;
+            color: var(--text-muted); margin-bottom: 1.25rem; padding-bottom: 0.6rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar overlay (mobile) -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+    <div class="brand"><i class="bi bi-hexagon-fill"></i> MoizHR</div>
+    <div class="d-flex flex-column gap-1 mb-auto">
+        <a class="nav-item active" onclick="navTo('view-dash', this)"><i class="bi bi-pie-chart"></i> Dashboard</a>
+        <a class="nav-item" onclick="navTo('view-dir', this)"><i class="bi bi-people"></i> Directory</a>
+        <a class="nav-item" onclick="navTo('view-form', this)"><i class="bi bi-person-plus"></i> Onboarding</a>
+    </div>
+    <div class="theme-toggle-wrapper">
+        <button class="theme-btn" onclick="toggleTheme()" id="themeToggle">
+            <i class="bi bi-moon-fill"></i> Dark Mode
+        </button>
+    </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main-content">
+    <div class="mobile-header">
+        <button class="mobile-toggle" onclick="openSidebar()"><i class="bi bi-list fs-4"></i></button>
+        <div class="brand mb-0 pb-0" style="font-size:1.2rem;"><i class="bi bi-hexagon-fill"></i> MoizHR</div>
+        <div style="width:40px;"></div>
+    </div>
+
+    <!-- ===================== DASHBOARD ===================== -->
+    <section id="view-dash" class="view-section active">
+        <div class="page-header">
+            <div>
+                <h2 class="mb-1">Organization Overview</h2>
+                <p class="text-muted mb-0">Analytics and metrics for your workforce.</p>
+            </div>
+            <button class="btn-prim d-none d-md-flex align-items-center gap-2" onclick="navTo('view-form')">
+                <i class="bi bi-plus-lg"></i> Hire Employee
+            </button>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-6 col-md-3">
+                <div class="card-sc stat-card">
+                    <div class="stat-icon bg-prim-subtle"><i class="bi bi-people-fill"></i></div>
+                    <div><div class="stat-val" id="stTotal">0</div><div class="stat-lbl">Total Headcount</div></div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card-sc stat-card">
+                    <div class="stat-icon bg-succ-subtle"><i class="bi bi-person-check-fill"></i></div>
+                    <div><div class="stat-val" id="stActive">0</div><div class="stat-lbl">Active Staff</div></div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card-sc stat-card">
+                    <div class="stat-icon bg-warn-subtle"><i class="bi bi-currency-dollar"></i></div>
+                    <div><div class="stat-val" id="stAvgSal">$0k</div><div class="stat-lbl">Avg Salary</div></div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card-sc stat-card">
+                    <div class="stat-icon bg-dang-subtle"><i class="bi bi-person-dash-fill"></i></div>
+                    <div><div class="stat-val" id="stInactive">0</div><div class="stat-lbl">On Leave</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="card-sc">
+                    <h6 class="mb-4">Department Distribution</h6>
+                    <div class="chart-container"><canvas id="deptChart"></canvas></div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card-sc">
+                    <h6 class="mb-4">Hiring Activity by Year</h6>
+                    <div class="chart-container"><canvas id="hireChart"></canvas></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================== DIRECTORY ===================== -->
+    <section id="view-dir" class="view-section">
+        <div class="page-header flex-wrap gap-3">
+            <div>
+                <h2 class="mb-1">Team Directory</h2>
+                <p class="text-muted mb-0">Manage personnel data, roles, and compensation.</p>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+                <button class="btn-sect d-flex align-items-center gap-2" onclick="showImportModal()"><i class="bi bi-upload"></i> Import CSV</button>
+                <button class="btn-sect d-flex align-items-center gap-2" onclick="exportToCSV()"><i class="bi bi-download"></i> Export CSV</button>
+                <button class="btn-prim d-flex align-items-center gap-2" onclick="navTo('view-form')"><i class="bi bi-plus-lg"></i> Add New</button>
+            </div>
+        </div>
+
+        <div class="card-sc mb-4 p-3">
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <input type="text" class="form-control" id="searchInput" placeholder="Search by name, ID, email...">
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="filterDept">
+                        <option value="">All Departments</option>
+                        <option>Engineering</option><option>Product</option><option>Design</option>
+                        <option>HR</option><option>Marketing</option><option>Sales</option><option>Finance</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select" id="filterStatus">
+                        <option value="">All Statuses</option>
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select" id="pageSizeSelect" onchange="changePageSize()">
+                        <option value="5">5 / page</option>
+                        <option value="10" selected>10 / page</option>
+                        <option value="25">25 / page</option>
+                        <option value="50">50 / page</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive" style="border-radius: var(--radius-lg); overflow:hidden;">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th onclick="sortBy('name')" title="Sort by Name">Employee <span class="sort-icon"></span></th>
+                        <th onclick="sortBy('position')" title="Sort by Role">Role / Dept <span class="sort-icon"></span></th>
+                        <th onclick="sortBy('salary')" title="Sort by Salary">Salary <span class="sort-icon"></span></th>
+                        <th onclick="sortBy('joinDate')" title="Sort by Date">Join Date <span class="sort-icon"></span></th>
+                        <th onclick="sortBy('rating')" title="Sort by Rating">Rating <span class="sort-icon"></span></th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+            <div class="pagination-bar" id="paginationBar">
+                <span class="page-info" id="pageInfo">Showing 0 of 0</span>
+                <div class="page-btns" id="pageBtns"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================== FORM ===================== -->
+    <section id="view-form" class="view-section">
+        <button class="btn-sect d-inline-flex align-items-center gap-2 mb-4" style="border-radius:50%;width:40px;height:40px;justify-content:center;padding:0;" onclick="navTo('view-dir')">
+            <i class="bi bi-arrow-left"></i>
+        </button>
+        <div class="page-header mb-4">
+            <div>
+                <h2 class="mb-1" id="formTitle">Onboard New Hire</h2>
+                <p class="text-muted mb-0" id="formSubtitle">Enter comprehensive details for the employee profile.</p>
+            </div>
+        </div>
+
+        <div class="card-sc p-4 p-md-5" style="max-width:900px;">
+            <form id="empForm" novalidate>
+                <input type="hidden" id="isEdit" value="false">
+
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <label class="form-label text-primary fw-bold"><i class="bi bi-fingerprint"></i> System ID</label>
+                        <input type="text" class="form-control fw-bold text-primary bg-prim-subtle border-0 mono" id="empId" readonly>
+                    </div>
+                </div>
+
+                <div class="form-section-title"><i class="bi bi-person-lines-fill"></i> Personal Details</div>
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label">Full Legal Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="fName" required placeholder="e.g. John Smith">
+                        <div class="invalid-feedback-custom">Full name is required.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Work Email <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control" id="fEmail" required placeholder="name@company.com">
+                        <div class="invalid-feedback-custom">A valid email address is required.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Phone <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="fPhone" required placeholder="e.g. 555-123-4567">
+                        <div class="invalid-feedback-custom">Phone number is required.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Status <span class="text-danger">*</span></label>
+                        <select class="form-select" id="fStatus" required>
+                            <option value="Active">Active Employee</option>
+                            <option value="Inactive">Leave / Inactive</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-section-title"><i class="bi bi-briefcase-fill"></i> Professional & Compensation</div>
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label">Department <span class="text-danger">*</span></label>
+                        <select class="form-select" id="fDept" required>
+                            <option value="" disabled selected>Select Department...</option>
+                            <option>Engineering</option><option>Product</option><option>Design</option>
+                            <option>HR</option><option>Marketing</option><option>Sales</option><option>Finance</option>
+                        </select>
+                        <div class="invalid-feedback-custom">Please select a department.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Job Title <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="fPos" required placeholder="e.g. Senior Engineer">
+                        <div class="invalid-feedback-custom">Job title is required.</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Base Salary (USD) <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" class="form-control" id="fSal" required placeholder="80000" min="1000" max="5000000" step="500">
+                        </div>
+                        <div class="invalid-feedback-custom" id="salError">Salary must be between $1,000 and $5,000,000.</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Contract Date <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="fDate" required>
+                        <div class="invalid-feedback-custom">Join date is required.</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Performance Rating</label>
+                        <select class="form-select" id="fRat">
+                            <option value="0">Not Rated</option>
+                            <option value="1">1 - Needs Work</option>
+                            <option value="2">2 - Below Average</option>
+                            <option value="3" selected>3 - Satisfactory</option>
+                            <option value="4">4 - Exceeds</option>
+                            <option value="5">5 - Outstanding</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-3 pt-3 border-top" style="border-color:var(--border-color)!important;">
+                    <button type="button" class="btn-sect" onclick="navTo('view-dir')">Cancel</button>
+                    <button type="submit" class="btn-prim px-4" id="submitBtn">Save Profile</button>
+                </div>
+            </form>
+        </div>
+    </section>
+</main>
+
+<!-- TOAST -->
+<div id="toast-container" class="toast-container position-fixed bottom-0 end-0 p-4" style="z-index:9999;"></div>
+
+<!-- ===================== PROFILE MODAL ===================== -->
+<div class="modal-overlay" id="profileModal" onclick="closeProfileModal(event)">
+    <div class="profile-modal" id="profileModalContent">
+        <div class="profile-modal-header">
+            <div class="avatar-lg" id="pmAvatar">?</div>
+            <div style="flex:1;">
+                <h4 class="mb-1" id="pmName">—</h4>
+                <div class="text-muted mb-2" id="pmPos">—</div>
+                <div id="pmBadge"></div>
+            </div>
+            <button onclick="closeProfileModal()" style="background:none;border:none;color:var(--text-muted);font-size:1.25rem;cursor:pointer;line-height:1;"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="profile-modal-body">
+            <div id="pmDetails"></div>
+            <div class="d-flex gap-2 mt-4">
+                <button class="btn-prim flex-fill" id="pmEditBtn"><i class="bi bi-pencil-square me-2"></i>Edit Profile</button>
+                <button class="btn-danger-soft" id="pmDeleteBtn"><i class="bi bi-trash me-2"></i>Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===================== IMPORT MODAL ===================== -->
+<div class="modal-overlay" id="importModal" onclick="closeImportModal(event)">
+    <div class="profile-modal" id="importModalContent" style="max-width:480px;">
+        <div style="padding:1.75rem 2rem;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="mb-0"><i class="bi bi-upload me-2"></i>Import from CSV</h5>
+                <button onclick="closeImportModal()" style="background:none;border:none;color:var(--text-muted);font-size:1.2rem;cursor:pointer;"><i class="bi bi-x-lg"></i></button>
+            </div>
+            <div class="import-zone" id="importZone" onclick="document.getElementById('csvFileInput').click()">
+                <i class="bi bi-file-earmark-spreadsheet d-block"></i>
+                <div class="fw-600 mb-1" style="font-weight:600;">Drop a CSV file here</div>
+                <div class="text-muted" style="font-size:0.85rem;">or click to browse</div>
+                <input type="file" id="csvFileInput" accept=".csv" style="display:none;" onchange="handleCSVImport(this)">
+            </div>
+            <div class="mt-3 p-3 rounded" style="background:var(--bg-hover);font-size:0.82rem;color:var(--text-muted);">
+                <strong>Expected columns:</strong> Name, Email, Phone, Department, Position, Salary, Join Date, Rating, Status
+                <br><br>
+                <button class="btn-sect w-100 mt-2" onclick="downloadTemplate()"><i class="bi bi-download me-1"></i> Download Template CSV</button>
+            </div>
+            <div id="importFeedback" class="mt-3" style="display:none;"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ===================== DATA =====================
+const MOCK_DATA = [
+    { id:'1001', name:'Sophia Sterling', email:'sophia@moiz-hr.app', phone:'123-456-7890', department:'Design', position:'Lead Product Designer', status:'Active', salary:115000, joinDate:'2023-04-12', rating:5 },
+    { id:'1002', name:'Marcus Chen', email:'marcus@moiz-hr.app', phone:'098-765-4321', department:'Engineering', position:'Senior Backend Engineer', status:'Active', salary:145000, joinDate:'2022-08-01', rating:4 },
+    { id:'1003', name:'Elena Rostova', email:'elena@moiz-hr.app', phone:'555-123-4567', department:'Marketing', position:'Director of Growth', status:'Active', salary:125000, joinDate:'2021-11-15', rating:4 },
+    { id:'1004', name:'David Kim', email:'david@moiz-hr.app', phone:'222-333-4444', department:'Product', position:'Product Manager', status:'Inactive', salary:110000, joinDate:'2023-01-20', rating:3 },
+    { id:'1005', name:'Aaliyah Jones', email:'aaliyah@moiz-hr.app', phone:'777-888-9999', department:'Engineering', position:'Frontend Developer', status:'Active', salary:95000, joinDate:'2024-02-10', rating:5 },
+    { id:'1006', name:'Ravi Patel', email:'ravi@moiz-hr.app', phone:'444-555-6666', department:'Finance', position:'CFO', status:'Active', salary:195000, joinDate:'2020-06-01', rating:5 },
+    { id:'1007', name:'Layla Hassan', email:'layla@moiz-hr.app', phone:'111-222-3333', department:'HR', position:'HR Manager', status:'Active', salary:88000, joinDate:'2022-03-18', rating:4 },
+    { id:'1008', name:'Tomás Reyes', email:'tomas@moiz-hr.app', phone:'999-888-7777', department:'Sales', position:'Sales Executive', status:'Inactive', salary:72000, joinDate:'2023-09-05', rating:3 },
+    { id:'1009', name:'Nina Kapoor', email:'nina@moiz-hr.app', phone:'666-777-8888', department:'Engineering', position:'DevOps Engineer', status:'Active', salary:130000, joinDate:'2021-07-22', rating:4 },
+    { id:'1010', name:'James Owusu', email:'james@moiz-hr.app', phone:'333-444-5555', department:'Product', position:'UX Researcher', status:'Active', salary:98000, joinDate:'2022-12-01', rating:3 },
+    { id:'1011', name:'Chloe Dupont', email:'chloe@moiz-hr.app', phone:'121-212-1212', department:'Design', position:'UI Designer', status:'Active', salary:87000, joinDate:'2024-01-08', rating:4 },
+    { id:'1012', name:'Arjun Sharma', email:'arjun@moiz-hr.app', phone:'898-989-8989', department:'Engineering', position:'ML Engineer', status:'Active', salary:160000, joinDate:'2020-09-14', rating:5 },
+];
+
+if (!localStorage.getItem('moiz_hr_data')) {
+    localStorage.setItem('moiz_hr_data', JSON.stringify(MOCK_DATA));
+}
+
+const DB = {
+    get: () => JSON.parse(localStorage.getItem('moiz_hr_data')) || [],
+    save: (d) => localStorage.setItem('moiz_hr_data', JSON.stringify(d)),
+    add: (e) => { const d = DB.get(); d.push(e); DB.save(d); },
+    update: (e) => { const d = DB.get(); const i = d.findIndex(x => x.id === e.id); if(i>-1){ d[i]=e; DB.save(d); } },
+    delete: (id) => { DB.save(DB.get().filter(x => x.id !== id)); },
+    find: (id) => DB.get().find(x => x.id === id),
+    genId: () => { const d = DB.get(); return d.length ? (Math.max(...d.map(x=>parseInt(x.id)))+1).toString() : '1001'; }
+};
+
+// ===================== HELPERS =====================
+const getAvatarColor = (name) => {
+    const colors = ['#f43f5e','#ec4899','#d946ef','#8b5cf6','#6366f1','#3b82f6','#0ea5e9','#10b981','#f59e0b','#f97316'];
+    let hash = 0;
+    for(let i=0; i<name.length; i++) hash = name.charCodeAt(i) + ((hash<<5)-hash);
+    return colors[Math.abs(hash)%colors.length];
+};
+const formatMoney = (val) => new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(val||0);
+const formatDate = (s) => { if(!s) return 'N/A'; return new Date(s).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); };
+const renderStars = (rating) => {
+    rating = parseInt(rating);
+    if(!rating) return '<span class="text-muted" style="font-size:0.8rem">Unrated</span>';
+    let h = '<div class="rating-stars">';
+    for(let i=1;i<=5;i++) h += `<i class="bi bi-star-fill ${i<=rating?'filled':''}"></i> `;
+    return h + '</div>';
+};
+const showToast = (msg, isErr=false) => {
+    const c = document.getElementById('toast-container');
+    const icon = isErr ? 'bi-x-circle text-danger' : 'bi-check2-circle text-success';
+    const html = `<div class="toast custom-toast align-items-center show mt-2" style="border-left-color:${isErr?'var(--danger)':'var(--success)'}!important;opacity:0;transition:opacity 0.3s;">
+        <div class="d-flex p-2">
+            <div class="toast-body d-flex gap-3 align-items-center fw-medium"><i class="bi ${icon} fs-5"></i> ${msg}</div>
+            <button type="button" class="btn-close me-2 m-auto" onclick="this.closest('.toast').remove()"></button>
+        </div></div>`;
+    c.insertAdjacentHTML('beforeend', html);
+    const t = c.lastElementChild;
+    requestAnimationFrame(() => t.style.opacity = '1');
+    setTimeout(() => { t.style.opacity='0'; setTimeout(()=>t.remove(),300); }, 3500);
+};
+
+// ===================== THEME =====================
+const toggleTheme = () => {
+    const html = document.documentElement;
+    const target = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', target);
+    localStorage.setItem('moiz_theme', target);
+    const btn = document.getElementById('themeToggle');
+    btn.innerHTML = target === 'dark' ? '<i class="bi bi-sun-fill text-warning"></i> Light Mode' : '<i class="bi bi-moon-fill"></i> Dark Mode';
+    if(window.myCharts) updateChartsTheme();
+};
+if(localStorage.getItem('moiz_theme') === 'dark') toggleTheme();
+
+// ===================== NAVIGATION =====================
+function navTo(id, navEl=null) {
+    document.querySelectorAll('.view-section').forEach(e => e.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    const map = {'view-dash':0,'view-dir':1,'view-form':2};
+    document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
+    if(navEl) navEl.classList.add('active');
+    else document.querySelectorAll('.nav-item')[map[id]]?.classList.add('active');
+    if(window.innerWidth < 992) closeSidebar();
+    if(id === 'view-dash') renderDash();
+    if(id === 'view-dir') renderTable();
+    if(id === 'view-form' && document.getElementById('isEdit').value !== 'true') setupAdd();
+    document.getElementById('isEdit').value = id === 'view-form' && document.getElementById('isEdit').value === 'true' ? 'true' : (id === 'view-form' ? 'false' : 'false');
+}
+
+// Mobile sidebar
+function openSidebar() {
+    document.getElementById('sidebar').classList.add('show');
+    document.getElementById('sidebarOverlay').classList.add('show');
+}
+function closeSidebar() {
+    document.getElementById('sidebar').classList.remove('show');
+    document.getElementById('sidebarOverlay').classList.remove('show');
+}
+
+// ===================== DASHBOARD =====================
+window.myCharts = {};
+function renderDash() {
+    const data = DB.get();
+    document.getElementById('stTotal').innerText = data.length;
+    const active = data.filter(d=>d.status==='Active');
+    const inactive = data.filter(d=>d.status!=='Active');
+    document.getElementById('stActive').innerText = active.length;
+    document.getElementById('stInactive').innerText = inactive.length;
+    const totalSal = active.reduce((acc,c)=>acc+(parseInt(c.salary)||0),0);
+    document.getElementById('stAvgSal').innerText = active.length ? formatMoney(totalSal/active.length).replace(/\.00$/,'') : '$0';
+    drawCharts(data);
+}
+function drawCharts(data) {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const textColor = isDark ? '#94a3b8' : '#64748b';
+    const gridColor = isDark ? '#334155' : '#e2e8f0';
+    Chart.defaults.color = textColor;
+    Chart.defaults.font.family = 'DM Sans';
+
+    const depts = {};
+    data.forEach(d => { depts[d.department] = (depts[d.department]||0)+1; });
+    if(window.myCharts.dept) window.myCharts.dept.destroy();
+    window.myCharts.dept = new Chart(document.getElementById('deptChart'), {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(depts),
+            datasets: [{ data: Object.values(depts),
+                backgroundColor: ['#4f46e5','#3b82f6','#10b981','#f59e0b','#ec4899','#8b5cf6','#0ea5e9','#f43f5e'],
+                borderWidth: isDark?0:2, borderColor: isDark?'transparent':'#fff' }]
+        },
+        options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{position:'right'} }, cutout:'70%' }
+    });
+
+    const years = {};
+    data.forEach(d => { if(d.joinDate){ const yr=d.joinDate.substring(0,4); years[yr]=(years[yr]||0)+1; } });
+    const sortedYears = Object.keys(years).sort();
+    if(window.myCharts.hire) window.myCharts.hire.destroy();
+    window.myCharts.hire = new Chart(document.getElementById('hireChart'), {
+        type: 'bar',
+        data: { labels: sortedYears, datasets:[{ label:'New Hires', data:sortedYears.map(y=>years[y]), backgroundColor:'#4f46e5', borderRadius:4 }] },
+        options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+            scales:{ y:{beginAtZero:true,grid:{color:gridColor},ticks:{stepSize:1}}, x:{grid:{display:false}} } }
+    });
+}
+function updateChartsTheme() { renderDash(); }
+
+// ===================== TABLE / PAGINATION / SORT =====================
+let currentPage = 1;
+let pageSize = 10;
+let sortField = 'name';
+let sortDir = 'asc';
+
+function sortBy(field) {
+    if(sortField === field) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+    else { sortField = field; sortDir = 'asc'; }
+    document.querySelectorAll('.table th').forEach(th => { th.classList.remove('sorted-asc','sorted-desc'); });
+    const thMap = { name:0, position:1, salary:2, joinDate:3, rating:4 };
+    const idx = thMap[field];
+    if(idx !== undefined) {
+        const ths = document.querySelectorAll('.table th');
+        ths[idx].classList.add(sortDir==='asc'?'sorted-asc':'sorted-desc');
+    }
+    currentPage = 1;
+    renderTable();
+}
+
+function changePageSize() {
+    pageSize = parseInt(document.getElementById('pageSizeSelect').value);
+    currentPage = 1;
+    renderTable();
+}
+
+function renderTable() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const dept = document.getElementById('filterDept').value;
+    const stat = document.getElementById('filterStatus').value;
+
+    let data = DB.get().filter(e => {
+        const mtchTxt = e.name.toLowerCase().includes(q) || e.id.includes(q) || e.email.toLowerCase().includes(q);
+        const mtchDept = dept ? e.department === dept : true;
+        const mtchStat = stat ? e.status === stat : true;
+        return mtchTxt && mtchDept && mtchStat;
+    });
+
+    // Sort
+    data.sort((a,b) => {
+        let va = a[sortField], vb = b[sortField];
+        if(sortField === 'salary' || sortField === 'rating') { va = parseFloat(va)||0; vb = parseFloat(vb)||0; }
+        else { va = (va||'').toString().toLowerCase(); vb = (vb||'').toString().toLowerCase(); }
+        if(va < vb) return sortDir==='asc' ? -1 : 1;
+        if(va > vb) return sortDir==='asc' ? 1 : -1;
+        return 0;
+    });
+
+    const total = data.length;
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+    if(currentPage > totalPages) currentPage = totalPages;
+    const start = (currentPage-1)*pageSize;
+    const paginated = data.slice(start, start+pageSize);
+
+    const tbody = document.getElementById('tableBody');
+    if(data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-muted">No records found.</td></tr>`;
+    } else {
+        tbody.innerHTML = paginated.map(e => `
+            <tr>
+                <td>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="avatar" style="background:${getAvatarColor(e.name)}">${e.name.charAt(0)}</div>
+                        <div>
+                            <div class="fw-bold" style="font-size:0.92rem">${e.name}</div>
+                            <small class="text-muted">${e.email}</small>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="fw-medium">${e.position}</div>
+                    <div class="text-muted" style="font-size:0.78rem">${e.department}</div>
+                </td>
+                <td class="mono" style="font-size:0.88rem">${formatMoney(e.salary)}</td>
+                <td style="font-size:0.88rem">${formatDate(e.joinDate)}</td>
+                <td>${renderStars(e.rating)}</td>
+                <td><span class="status-badge ${e.status==='Active'?'badge-active':'badge-inactive'}">${e.status}</span></td>
+                <td class="text-end">
+                    <button class="action-btn view-btn" onclick="viewProfile('${e.id}')" title="View Profile"><i class="bi bi-eye"></i></button>
+                    <button class="action-btn edit" onclick="editRow('${e.id}')" title="Edit"><i class="bi bi-pencil-square"></i></button>
+                    <button class="action-btn delete" onclick="delRow('${e.id}')" title="Delete"><i class="bi bi-trash"></i></button>
+                </td>
+            </tr>`).join('');
+    }
+
+    // Pagination info
+    document.getElementById('pageInfo').innerText = total === 0 ? 'No results' :
+        `Showing ${start+1}–${Math.min(start+pageSize, total)} of ${total}`;
+
+    // Pagination buttons
+    const pageBtns = document.getElementById('pageBtns');
+    let btns = '';
+    btns += `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹</button>`;
+    const range = getPageRange(currentPage, totalPages);
+    range.forEach(p => {
+        if(p === '...') btns += `<button class="page-btn" disabled>…</button>`;
+        else btns += `<button class="page-btn ${p===currentPage?'active':''}" onclick="goPage(${p})">${p}</button>`;
+    });
+    btns += `<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===totalPages?'disabled':''}>›</button>`;
+    pageBtns.innerHTML = btns;
+}
+
+function getPageRange(current, total) {
+    if(total <= 7) return Array.from({length:total},(_,i)=>i+1);
+    if(current <= 4) return [1,2,3,4,5,'...',total];
+    if(current >= total-3) return [1,'...',total-4,total-3,total-2,total-1,total];
+    return [1,'...',current-1,current,current+1,'...',total];
+}
+function goPage(p) {
+    const data = DB.get();
+    const totalPages = Math.max(1, Math.ceil(data.length / pageSize));
+    if(p<1||p>totalPages) return;
+    currentPage = p;
+    renderTable();
+}
+
+document.getElementById('searchInput').addEventListener('input', () => { currentPage=1; renderTable(); });
+document.getElementById('filterDept').addEventListener('change', () => { currentPage=1; renderTable(); });
+document.getElementById('filterStatus').addEventListener('change', () => { currentPage=1; renderTable(); });
+
+// ===================== PROFILE VIEW MODAL =====================
+function viewProfile(id) {
+    const e = DB.find(id); if(!e) return;
+    const color = getAvatarColor(e.name);
+    document.getElementById('pmAvatar').style.background = color;
+    document.getElementById('pmAvatar').innerText = e.name.charAt(0);
+    document.getElementById('pmName').innerText = e.name;
+    document.getElementById('pmPos').innerText = `${e.position} · ${e.department}`;
+    document.getElementById('pmBadge').innerHTML = `<span class="status-badge ${e.status==='Active'?'badge-active':'badge-inactive'}">${e.status}</span>`;
+
+    const rows = [
+        ['Email', `<a href="mailto:${e.email}" style="color:var(--primary)">${e.email}</a>`],
+        ['Phone', e.phone || 'N/A'],
+        ['Employee ID', `<span class="mono fw-bold">#${e.id}</span>`],
+        ['Salary', `<span class="mono">${formatMoney(e.salary)}</span>`],
+        ['Join Date', formatDate(e.joinDate)],
+        ['Performance', renderStars(e.rating)],
+        ['Status', `<span class="status-badge ${e.status==='Active'?'badge-active':'badge-inactive'}">${e.status}</span>`],
+    ];
+
+    document.getElementById('pmDetails').innerHTML = rows.map(([l,v]) => `
+        <div class="profile-detail-row">
+            <span class="profile-detail-label">${l}</span>
+            <span class="profile-detail-val">${v}</span>
+        </div>`).join('');
+
+    document.getElementById('pmEditBtn').onclick = () => { closeProfileModal(); editRow(id); };
+    document.getElementById('pmDeleteBtn').onclick = () => { closeProfileModal(); delRow(id); };
+
+    document.getElementById('profileModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+function closeProfileModal(e) {
+    if(e && e.target !== document.getElementById('profileModal')) return;
+    document.getElementById('profileModal').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+// ===================== ACTIONS =====================
+window.delRow = (id) => {
+    if(confirm("Permanently delete this employee record?")) {
+        DB.delete(id); showToast('Record Deleted'); renderTable();
+        if(document.getElementById('profileModal').classList.contains('open')) closeProfileModal();
+    }
+};
+window.editRow = (id) => {
+    const e = DB.find(id); if(!e) return;
+    document.getElementById('isEdit').value = 'true';
+    document.getElementById('formTitle').innerText = 'Edit Employee Profile';
+    document.getElementById('formSubtitle').innerText = 'Updating record for ' + e.name;
+    document.getElementById('submitBtn').innerText = 'Update Profile';
+    document.getElementById('empId').value = e.id;
+    document.getElementById('fName').value = e.name;
+    document.getElementById('fEmail').value = e.email;
+    document.getElementById('fPhone').value = e.phone;
+    document.getElementById('fStatus').value = e.status;
+    document.getElementById('fDept').value = e.department;
+    document.getElementById('fPos').value = e.position;
+    document.getElementById('fSal').value = e.salary || '';
+    document.getElementById('fDate').value = e.joinDate || '';
+    document.getElementById('fRat').value = e.rating || '0';
+    // clear validation state
+    document.querySelectorAll('#empForm .form-control, #empForm .form-select').forEach(el => el.classList.remove('is-invalid'));
+    navTo('view-form');
+    document.getElementById('isEdit').value = 'true';
+};
+
+function setupAdd() {
+    document.getElementById('empForm').reset();
+    document.getElementById('isEdit').value = 'false';
+    document.getElementById('formTitle').innerText = 'Onboard New Hire';
+    document.getElementById('formSubtitle').innerText = 'Enter comprehensive details for the employee profile.';
+    document.getElementById('submitBtn').innerText = 'Save Profile';
+    document.getElementById('empId').value = DB.genId();
+    document.getElementById('fDate').value = new Date().toISOString().split('T')[0];
+    document.querySelectorAll('#empForm .form-control, #empForm .form-select').forEach(el => el.classList.remove('is-invalid'));
+}
+
+// ===================== FORM VALIDATION =====================
+document.getElementById('empForm').addEventListener('submit', function(ev) {
+    ev.preventDefault();
+    let valid = true;
+
+    const fields = [
+        { id:'fName', check: v => v.trim().length > 0, msg:'Full name is required.' },
+        { id:'fEmail', check: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()), msg:'A valid email is required.' },
+        { id:'fPhone', check: v => v.trim().length > 0, msg:'Phone number is required.' },
+        { id:'fDept', check: v => v !== '', msg:'Please select a department.' },
+        { id:'fPos', check: v => v.trim().length > 0, msg:'Job title is required.' },
+        { id:'fDate', check: v => v !== '', msg:'Join date is required.' },
+    ];
+
+    fields.forEach(({id, check}) => {
+        const el = document.getElementById(id);
+        if(!check(el.value)) { el.classList.add('is-invalid'); valid = false; }
+        else el.classList.remove('is-invalid');
+    });
+
+    // Salary special check
+    const salEl = document.getElementById('fSal');
+    const salVal = parseFloat(salEl.value);
+    if(isNaN(salVal) || salVal < 1000 || salVal > 5000000) {
+        salEl.classList.add('is-invalid');
+        document.getElementById('salError').style.display = 'block';
+        valid = false;
+    } else {
+        salEl.classList.remove('is-invalid');
+        document.getElementById('salError').style.display = 'none';
+    }
+
+    if(!valid) { showToast('Please fix the highlighted fields.', true); return; }
+
+    const obj = {
+        id: document.getElementById('empId').value,
+        name: document.getElementById('fName').value.trim(),
+        email: document.getElementById('fEmail').value.trim(),
+        phone: document.getElementById('fPhone').value.trim(),
+        status: document.getElementById('fStatus').value,
+        department: document.getElementById('fDept').value,
+        position: document.getElementById('fPos').value.trim(),
+        salary: parseFloat(document.getElementById('fSal').value),
+        joinDate: document.getElementById('fDate').value,
+        rating: document.getElementById('fRat').value
+    };
+
+    if(document.getElementById('isEdit').value === 'true') {
+        DB.update(obj); showToast('Profile Updated!');
+    } else {
+        DB.add(obj); showToast('New Hire Added!');
+    }
+    document.getElementById('isEdit').value = 'false';
+    setTimeout(() => navTo('view-dir'), 300);
+});
+
+// Clear individual field errors on input
+document.querySelectorAll('#empForm .form-control, #empForm .form-select').forEach(el => {
+    el.addEventListener('input', () => el.classList.remove('is-invalid'));
+    el.addEventListener('change', () => el.classList.remove('is-invalid'));
+});
+
+// ===================== CSV EXPORT =====================
+window.exportToCSV = () => {
+    const data = DB.get();
+    if(!data.length) return showToast('No data to export.', true);
+    const cols = ['ID','Name','Email','Phone','Department','Position','Salary','Join Date','Rating','Status'];
+    let csv = cols.join(',') + '\n';
+    data.forEach(d => {
+        csv += [d.id,`"${d.name}"`,`"${d.email}"`,`"${d.phone}"`,`"${d.department}"`,`"${d.position}"`,d.salary||0,d.joinDate||'',d.rating||0,d.status].join(',') + '\n';
+    });
+    downloadBlob(csv, `MoizHR_Export_${new Date().toISOString().split('T')[0]}.csv`, 'text/csv');
+    showToast('CSV Exported Successfully');
+};
+
+function downloadBlob(content, filename, mime) {
+    const blob = new Blob([content], {type: mime+';charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
+// ===================== CSV IMPORT =====================
+function showImportModal() {
+    document.getElementById('importModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    document.getElementById('importFeedback').style.display = 'none';
+}
+function closeImportModal(e) {
+    if(e && e.target !== document.getElementById('importModal')) return;
+    document.getElementById('importModal').classList.remove('open');
+    document.body.style.overflow = '';
+    document.getElementById('csvFileInput').value = '';
+}
+
+// Drag and drop
+const zone = document.getElementById('importZone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+zone.addEventListener('drop', e => {
+    e.preventDefault(); zone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if(file) parseCSVFile(file);
+});
+
+function handleCSVImport(input) {
+    const file = input.files[0];
+    if(file) parseCSVFile(file);
+}
+
+function parseCSVFile(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const text = e.target.result;
+        const lines = text.trim().split('\n');
+        if(lines.length < 2) { showImportFeedback('CSV appears empty.', true); return; }
+
+        const headers = lines[0].split(',').map(h => h.trim().replace(/"/g,'').toLowerCase());
+        const required = ['name','email'];
+        const missing = required.filter(r => !headers.includes(r));
+        if(missing.length) { showImportFeedback(`Missing columns: ${missing.join(', ')}`, true); return; }
+
+        let added = 0, skipped = 0;
+        const existing = DB.get();
+        const existingEmails = new Set(existing.map(e => e.email.toLowerCase()));
+
+        lines.slice(1).forEach(line => {
+            if(!line.trim()) return;
+            const vals = line.match(/(".*?"|[^,]+|(?<=,)(?=,)|(?<=,)$|^(?=,))/g) || line.split(',');
+            const clean = vals.map(v => v.trim().replace(/^"|"$/g,''));
+            const row = {};
+            headers.forEach((h,i) => { row[h] = clean[i] || ''; });
+            if(!row.name || existingEmails.has((row.email||'').toLowerCase())) { skipped++; return; }
+            DB.add({
+                id: DB.genId(),
+                name: row.name,
+                email: row.email || '',
+                phone: row.phone || row['phone direct'] || '',
+                department: row.department || 'Engineering',
+                position: row.position || row['job title'] || '',
+                salary: parseFloat(row.salary) || 0,
+                joinDate: row['join date'] || row.joindate || '',
+                rating: parseInt(row.rating) || 0,
+                status: row.status || 'Active'
+            });
+            existingEmails.add((row.email||'').toLowerCase());
+            added++;
+        });
+
+        showImportFeedback(`✓ Imported ${added} record(s).${skipped ? ` ${skipped} skipped (duplicates/invalid).` : ''}`, false);
+        renderTable();
+        showToast(`${added} employee(s) imported!`);
+    };
+    reader.readAsText(file);
+}
+
+function showImportFeedback(msg, isErr) {
+    const el = document.getElementById('importFeedback');
+    el.style.display = 'block';
+    el.innerHTML = `<div class="p-3 rounded" style="background:${isErr?'rgba(239,68,68,0.08)':'rgba(16,185,129,0.08)'};color:${isErr?'var(--danger)':'var(--success)'};font-size:0.85rem;font-weight:500;">${msg}</div>`;
+}
+
+function downloadTemplate() {
+    const csv = 'Name,Email,Phone,Department,Position,Salary,Join Date,Rating,Status\nJane Doe,jane@example.com,555-000-1234,Engineering,Software Engineer,90000,2025-01-15,4,Active\n';
+    downloadBlob(csv, 'MoizHR_Import_Template.csv', 'text/csv');
+}
+
+// ===================== INIT =====================
+window.addEventListener('DOMContentLoaded', () => { navTo('view-dash'); });
+</script>
+</body>
+</html>
